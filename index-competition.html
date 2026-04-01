@@ -1,0 +1,2400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADBE Investment Thesis — Adobe is Mispriced by 61%</title>
+<meta name="description" content="A competition-grade investment thesis dashboard for Adobe (ADBE). Seven-panel analysis covering market setup, financials, AI signal, risk & conviction, catalysts, price targets, and bottom line.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+<style>
+/* ============================================
+   GLOBAL RESET & TOKENS
+   ============================================ */
+:root {
+  --bg: #111014;
+  --card: #1A191E;
+  --card-hover: #1F1E24;
+  --border: #2A2930;
+  --border-light: #35343B;
+  --text: #E8E6ED;
+  --text-muted: #8A8892;
+  --text-faint: #5A5862;
+  --text-dim: #3A3842;
+  --red: #E04545;
+  --red-dim: rgba(224,69,69,0.15);
+  --red-glow: rgba(224,69,69,0.08);
+  --amber: #E8A838;
+  --amber-dim: rgba(232,168,56,0.15);
+  --teal: #2DD4A8;
+  --teal-dim: rgba(45,212,168,0.12);
+  --blue: #5B8DEF;
+  --blue-dim: rgba(91,141,239,0.12);
+  --purple: #A78BFA;
+  --purple-dim: rgba(167,139,250,0.12);
+  --green: #6DAA45;
+  --green-dim: rgba(109,170,69,0.12);
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+  --radius: 12px;
+  --radius-sm: 8px;
+  --radius-xs: 6px;
+  --max-w: 1200px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  scroll-behavior: smooth;
+  scroll-padding-top: 72px;
+}
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  overflow-x: hidden;
+  line-height: 1.5;
+}
+
+/* ---- SCROLLBAR ---- */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* ---- STICKY NAV ---- */
+.dash-nav {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background: rgba(17,16,20,0.92);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+}
+.dash-nav-inner {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  height: 56px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.dash-nav-inner::-webkit-scrollbar { display: none; }
+.nav-logo {
+  font-weight: 800;
+  font-size: 15px;
+  color: var(--text);
+  letter-spacing: -0.5px;
+  white-space: nowrap;
+  margin-right: 32px;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+.nav-logo span { color: var(--red); font-weight: 800; }
+.nav-tabs {
+  display: flex;
+  gap: 2px;
+  align-items: center;
+}
+.nav-tab {
+  padding: 8px 14px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+.nav-tab:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+.nav-tab.active { color: var(--text); background: rgba(255,255,255,0.08); }
+
+/* ---- HERO ---- */
+.hero {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 80px 24px 64px;
+  text-align: center;
+}
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 100px;
+  padding: 8px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  margin-bottom: 28px;
+}
+.hero-badge .pulse {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--green);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.hero h1 {
+  font-size: clamp(36px, 5vw, 58px);
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  line-height: 1.08;
+  color: var(--text);
+  margin-bottom: 20px;
+}
+.hero h1 .accent {
+  background: linear-gradient(135deg, var(--red) 0%, var(--amber) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-sub {
+  font-size: 17px;
+  font-weight: 400;
+  color: var(--text-muted);
+  max-width: 640px;
+  margin: 0 auto 36px;
+  line-height: 1.6;
+}
+.hero-meta {
+  display: flex;
+  justify-content: center;
+  gap: 32px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--text-faint);
+}
+.hero-meta span { display: flex; align-items: center; gap: 6px; }
+
+/* ---- SECTION LAYOUT ---- */
+.dash-section {
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 0 24px 80px;
+}
+.section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border) 20%, var(--border) 80%, transparent);
+  max-width: var(--max-w);
+  margin: 0 auto 80px;
+}
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 40px;
+}
+.section-number {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--red);
+  background: var(--red-dim);
+  border: 1px solid rgba(224,69,69,0.2);
+  border-radius: var(--radius-sm);
+  padding: 4px 12px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.5px;
+}
+.section-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.5px;
+}
+
+/* ---- CARDS ---- */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+.card-subtitle {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.6;
+  margin-bottom: 16px;
+}
+.card-meta {
+  font-size: 10px;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+}
+
+/* ---- GRID HELPERS ---- */
+.grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+.grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+
+/* ---- KPI CARD ---- */
+.kpi-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: left;
+}
+.kpi-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 8px;
+}
+.kpi-value {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+.kpi-delta {
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+.kpi-delta.positive { color: var(--teal); }
+.kpi-delta.negative { color: var(--red); }
+
+/* ---- HEADLINE STAT ---- */
+.headline-stat {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px 32px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+.headline-stat .big-number {
+  font-size: 56px;
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  color: var(--red);
+  line-height: 1;
+}
+.headline-stat .big-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+.headline-stat .big-desc {
+  font-size: 13px;
+  color: var(--text-faint);
+  max-width: 420px;
+  line-height: 1.55;
+}
+.stat-chips {
+  display: flex;
+  gap: 12px;
+  margin-left: auto;
+  flex-wrap: wrap;
+}
+.stat-chip {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  text-align: center;
+  min-width: 100px;
+}
+.stat-chip .chip-value {
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+.stat-chip .chip-label {
+  font-size: 10px;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-top: 2px;
+}
+
+/* ---- CHART CARD ---- */
+.chart-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.chart-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+.chart-meta {
+  font-size: 11px;
+  color: var(--text-faint);
+  font-family: var(--font-mono);
+}
+.chart-wrap {
+  position: relative;
+  height: 320px;
+}
+.chart-source {
+  font-size: 10px;
+  color: var(--text-faint);
+  margin-top: 12px;
+  font-family: var(--font-mono);
+}
+.chart-source a { color: var(--text-faint); text-decoration: underline; }
+.chart-source a:hover { color: var(--text-muted); }
+
+/* ---- TABLE ---- */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.data-table th {
+  text-align: left;
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text-faint);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.data-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(42,41,48,0.5);
+  color: var(--text-muted);
+  font-variant-numeric: tabular-nums;
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr.highlight td { color: var(--text); font-weight: 600; background: var(--red-glow); }
+.data-table .mono { font-family: var(--font-mono); font-size: 13px; }
+
+/* ---- BADGES ---- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.badge-red { background: var(--red-dim); color: var(--red); border: 1px solid rgba(224,69,69,0.25); }
+.badge-amber { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(232,168,56,0.25); }
+.badge-teal { background: var(--teal-dim); color: var(--teal); border: 1px solid rgba(45,212,168,0.2); }
+.badge-blue { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(91,141,239,0.2); }
+.badge-purple { background: var(--purple-dim); color: var(--purple); border: 1px solid rgba(167,139,250,0.2); }
+.badge-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(109,170,69,0.2); }
+
+/* ---- SCORE BAR ---- */
+.score-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.score-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  width: 100px;
+  flex-shrink: 0;
+}
+.score-bar-bg {
+  flex: 1;
+  height: 6px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.score-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+.score-val {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  width: 28px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ---- BEAR CASE CARDS ---- */
+.bear-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+.bear-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ---- QUOTE CARD ---- */
+.quote-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--blue);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin-bottom: 20px;
+}
+.quote-text {
+  font-size: 16px;
+  font-weight: 500;
+  font-style: italic;
+  color: var(--text);
+  line-height: 1.6;
+  margin-bottom: 10px;
+}
+.quote-attr {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+/* ---- CALLOUT ---- */
+.callout {
+  background: linear-gradient(135deg, rgba(45,212,168,0.08), rgba(91,141,239,0.06));
+  border: 1px solid rgba(45,212,168,0.2);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  margin-bottom: 20px;
+}
+.callout-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--teal);
+  margin-bottom: 10px;
+}
+.callout-text {
+  font-size: 14px;
+  color: var(--text-muted);
+  line-height: 1.7;
+}
+
+/* ---- RISK CARD ---- */
+.risk-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 20px;
+}
+.risk-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+.risk-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+.risk-body { font-size: 13px; color: var(--text-muted); line-height: 1.7; }
+.risk-body strong { color: var(--text); }
+.risk-body p { margin-bottom: 8px; }
+.risk-body p:last-child { margin-bottom: 0; }
+
+/* ---- CATALYST CARD ---- */
+.catalyst-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 24px;
+  margin-bottom: 20px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.catalyst-card:hover { border-color: var(--border-light); }
+.catalyst-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.catalyst-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 6px;
+}
+.catalyst-timing {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+.catalyst-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.not-priced-in {
+  background: linear-gradient(135deg, var(--red-dim), rgba(232,168,56,0.15));
+  border: 1px solid rgba(224,69,69,0.3);
+  color: var(--red);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 100px;
+  letter-spacing: 0.03em;
+}
+.catalyst-detail {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+}
+.catalyst-detail.open { max-height: 500px; }
+.catalyst-detail-inner {
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  margin-top: 16px;
+}
+.catalyst-outcomes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.outcome-card {
+  padding: 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.outcome-bull {
+  background: var(--teal-dim);
+  border: 1px solid rgba(45,212,168,0.15);
+  color: var(--teal);
+}
+.outcome-bear {
+  background: var(--red-dim);
+  border: 1px solid rgba(224,69,69,0.15);
+  color: var(--red);
+}
+.outcome-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+}
+
+/* ---- SCENARIO TOGGLES ---- */
+.scenario-toggles {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 24px;
+}
+.scenario-btn {
+  padding: 8px 20px;
+  border-radius: 100px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: var(--font-body);
+}
+.scenario-btn:hover { border-color: var(--border-light); color: var(--text); }
+.scenario-btn.active-bear { background: var(--red-dim); border-color: rgba(224,69,69,0.3); color: var(--red); }
+.scenario-btn.active-base { background: var(--blue-dim); border-color: rgba(91,141,239,0.3); color: var(--blue); }
+.scenario-btn.active-bull { background: var(--teal-dim); border-color: rgba(45,212,168,0.3); color: var(--teal); }
+
+/* ---- BIG METRICS ---- */
+.big-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin: 32px 0;
+}
+.big-metric {
+  text-align: center;
+  padding: 28px 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+.big-metric-value {
+  font-family: var(--font-mono);
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+.big-metric-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+/* ---- THESIS BOX ---- */
+.thesis-box {
+  background: linear-gradient(135deg, rgba(224,69,69,0.06), rgba(232,168,56,0.06));
+  border: 1px solid rgba(224,69,69,0.15);
+  border-radius: var(--radius);
+  padding: 32px;
+  margin-bottom: 28px;
+  text-align: center;
+}
+.thesis-text {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.6;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* ---- COMPETITIVE BAR ---- */
+.comp-bar-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+.comp-bar-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  width: 120px;
+  flex-shrink: 0;
+}
+.comp-bar-track {
+  flex: 1;
+  height: 28px;
+  background: rgba(255,255,255,0.04);
+  border-radius: var(--radius-xs);
+  overflow: hidden;
+  position: relative;
+}
+.comp-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-xs);
+  display: flex;
+  align-items: center;
+  padding-left: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  transition: width 0.8s ease;
+}
+.comp-bar-value {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  width: 70px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ---- GROWTH BADGES ---- */
+.growth-badges {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.growth-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 16px 20px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  min-width: 140px;
+}
+.growth-badge-value {
+  font-family: var(--font-mono);
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.growth-badge-label {
+  font-size: 11px;
+  color: var(--text-faint);
+  margin-top: 4px;
+  text-align: center;
+}
+
+/* ---- SCATTER PLOT ---- */
+.scatter-wrap { position: relative; height: 300px; }
+
+/* ---- FOOTER ---- */
+.dash-footer {
+  border-top: 1px solid var(--border);
+  max-width: var(--max-w);
+  margin: 0 auto;
+  padding: 40px 24px 60px;
+}
+.footer-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 40px;
+  flex-wrap: wrap;
+}
+.footer-method { flex: 1; min-width: 280px; }
+.footer-method h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 10px;
+  text-align: left;
+}
+.footer-method p {
+  font-size: 12px;
+  color: var(--text-faint);
+  line-height: 1.7;
+  max-width: 520px;
+  text-align: left;
+}
+.footer-brand { text-align: right; flex-shrink: 0; }
+.footer-brand a {
+  font-size: 12px;
+  color: var(--text-faint);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.footer-brand a:hover { color: var(--text-muted); }
+.footer-date { font-size: 11px; color: var(--text-dim); margin-top: 6px; }
+
+/* ---- FADE-IN ANIMATION ---- */
+.fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+.fade-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 768px) {
+  .dash-nav { padding: 0 16px; }
+  .dash-nav-inner { height: 48px; }
+  .nav-logo { font-size: 14px; margin-right: 16px; }
+  .nav-tab { padding: 6px 10px; font-size: 11px; }
+  .hero { padding: 60px 16px 48px; }
+  .hero-sub { font-size: 15px; }
+  .hero-meta { gap: 16px; font-size: 12px; }
+  .dash-section { padding: 0 16px 60px; }
+  .section-divider { margin: 0 auto 60px; }
+  .section-header { margin-bottom: 28px; flex-wrap: wrap; }
+  .section-title { font-size: 20px; }
+  .grid-2, .grid-3, .grid-4, .grid-5 { grid-template-columns: 1fr; }
+  .headline-stat { flex-direction: column; align-items: flex-start; gap: 16px; }
+  .headline-stat .big-number { font-size: 42px; }
+  .stat-chips { margin-left: 0; }
+  .big-metrics { grid-template-columns: repeat(2, 1fr); }
+  .big-metric-value { font-size: 24px; }
+  .kpi-value { font-size: 22px; }
+  .catalyst-outcomes { grid-template-columns: 1fr; }
+  .footer-inner { flex-direction: column; }
+  .footer-brand { text-align: left; }
+  .chart-wrap { height: 260px; }
+  .comp-bar-label { width: 80px; font-size: 11px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════
+     NAVIGATION
+     ═══════════════════════════════════════ -->
+<nav class="dash-nav" id="dashNav">
+  <div class="dash-nav-inner">
+    <a href="#top" class="nav-logo">ADBE <span>Thesis</span></a>
+    <div class="nav-tabs" id="navTabs">
+      <a class="nav-tab" href="#setup">Setup</a>
+      <a class="nav-tab" href="#numbers">Numbers</a>
+      <a class="nav-tab" href="#ai-signal">AI Signal</a>
+      <a class="nav-tab" href="#risk">Risk</a>
+      <a class="nav-tab" href="#catalysts">Catalysts</a>
+      <a class="nav-tab" href="#valuation">Valuation</a>
+      <a class="nav-tab" href="#bottom-line">Bottom Line</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════
+     HERO
+     ═══════════════════════════════════════ -->
+<section class="hero" id="top">
+  <div class="hero-badge">
+    <div class="pulse"></div>
+    NASDAQ: ADBE &nbsp;·&nbsp; $240.88
+  </div>
+  <h1>Adobe is <span class="accent">Mispriced by 61%</span></h1>
+  <p class="hero-sub">A beaten-down quality compounder trading at 14x earnings while growing revenue 12%, generating $10B+ in annual FCF, and tripling its AI-first business. The market prices disruption. The data shows acceleration.</p>
+  <div class="hero-meta">
+    <span>Data as of March 30, 2026</span>
+    <span>·</span>
+    <span>7-Panel Investment Thesis</span>
+    <span>·</span>
+    <span>All sources cited</span>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     PANEL 1: THE SETUP
+     ═══════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="dash-section" id="setup">
+  <div class="section-header fade-in">
+    <span class="section-number">01</span>
+    <h2 class="section-title">The Setup — "What the Market Believes"</h2>
+  </div>
+
+  <!-- Headline Stat -->
+  <div class="headline-stat fade-in">
+    <div>
+      <div class="big-number">~61%</div>
+    </div>
+    <div>
+      <div class="big-label">Market-Implied Disruption Probability</div>
+      <div class="big-desc">The market is pricing Adobe as if there's a 61% chance AI destroys the business. At 14.03x P/E vs. a peer median of 35.85x, Adobe trades at the widest discount in its public history.</div>
+    </div>
+    <div class="stat-chips">
+      <div class="stat-chip">
+        <div class="chip-value">$240.88</div>
+        <div class="chip-label">Price</div>
+      </div>
+      <div class="stat-chip">
+        <div class="chip-value">14.03x</div>
+        <div class="chip-label">P/E Ratio</div>
+      </div>
+      <div class="stat-chip">
+        <div class="chip-value">35.85x</div>
+        <div class="chip-label">Peer Median</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Peer Comparison Table -->
+  <div class="card fade-in">
+    <div class="card-header">
+      <div class="card-title">Peer P/E Comparison</div>
+      <div class="card-meta">Source: <a href="https://perplexity.ai/finance/ADBE" target="_blank">Perplexity Finance</a>, Mar 30 2026</div>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>Ticker</th>
+          <th style="text-align:right">P/E Ratio</th>
+          <th style="text-align:right">Market Cap</th>
+          <th style="text-align:right">vs. ADBE</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="highlight">
+          <td><strong>Adobe Inc.</strong></td>
+          <td class="mono">ADBE</td>
+          <td class="mono" style="text-align:right;color:var(--red)">14.03x</td>
+          <td class="mono" style="text-align:right">$98.2B</td>
+          <td style="text-align:right">—</td>
+        </tr>
+        <tr>
+          <td>Salesforce</td>
+          <td class="mono">CRM</td>
+          <td class="mono" style="text-align:right">23.64x</td>
+          <td class="mono" style="text-align:right">$172.8B</td>
+          <td class="mono" style="text-align:right;color:var(--teal)">+68%</td>
+        </tr>
+        <tr>
+          <td>Intuit</td>
+          <td class="mono">INTU</td>
+          <td class="mono" style="text-align:right">27.85x</td>
+          <td class="mono" style="text-align:right">$119.1B</td>
+          <td class="mono" style="text-align:right;color:var(--teal)">+99%</td>
+        </tr>
+        <tr>
+          <td>Autodesk</td>
+          <td class="mono">ADSK</td>
+          <td class="mono" style="text-align:right">44.86x</td>
+          <td class="mono" style="text-align:right">$49.8B</td>
+          <td class="mono" style="text-align:right;color:var(--teal)">+220%</td>
+        </tr>
+        <tr>
+          <td>ServiceNow</td>
+          <td class="mono">NOW</td>
+          <td class="mono" style="text-align:right">62.74x</td>
+          <td class="mono" style="text-align:right">$109.6B</td>
+          <td class="mono" style="text-align:right;color:var(--teal)">+347%</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Drawdown Chart -->
+  <div class="chart-card fade-in">
+    <div class="chart-header">
+      <div>
+        <div class="chart-title">ADBE Price Drawdown: $688 Peak → $240.88 Current</div>
+      </div>
+      <div style="display:flex;gap:24px">
+        <div style="text-align:right">
+          <div class="mono" style="font-size:14px;font-weight:600;color:var(--red)">−65.0%</div>
+          <div style="font-size:10px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.06em">From Peak</div>
+        </div>
+        <div style="text-align:right">
+          <div class="mono" style="font-size:14px;font-weight:600;color:var(--red)">−43.1%</div>
+          <div style="font-size:10px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.06em">52-Week</div>
+        </div>
+      </div>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="drawdownChart"></canvas>
+    </div>
+    <div class="chart-source">Source: <a href="https://perplexity.ai/finance/ADBE" target="_blank">Perplexity Finance</a>, Mar 30 2026</div>
+  </div>
+
+  <!-- Bear Case Cards -->
+  <div class="grid-3 fade-in" style="margin-bottom:24px">
+    <div class="bear-card">
+      <div class="bear-card-title">
+        <span style="font-size:18px">⚡</span> AI Disruption
+      </div>
+      <div style="margin-bottom:12px">
+        <div class="score-row">
+          <span class="score-label">Narrative</span>
+          <div class="score-bar-bg"><div class="score-bar-fill" style="width:100%;background:var(--red)"></div></div>
+          <span class="score-val">5/5</span>
+        </div>
+        <div class="score-row">
+          <span class="score-label">Fundamental</span>
+          <div class="score-bar-bg"><div class="score-bar-fill" style="width:40%;background:var(--teal)"></div></div>
+          <span class="score-val">2/5</span>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text-faint);line-height:1.6">"AI tools will replace Photoshop/Illustrator." Narrative is ubiquitous but unsupported by actual customer churn or revenue deceleration data.</div>
+    </div>
+    <div class="bear-card">
+      <div class="bear-card-title">
+        <span style="font-size:18px">📉</span> TAM Compression
+      </div>
+      <div style="margin-bottom:12px">
+        <div class="score-row">
+          <span class="score-label">Narrative</span>
+          <div class="score-bar-bg"><div class="score-bar-fill" style="width:80%;background:var(--amber)"></div></div>
+          <span class="score-val">4/5</span>
+        </div>
+        <div class="score-row">
+          <span class="score-label">Fundamental</span>
+          <div class="score-bar-bg"><div class="score-bar-fill" style="width:60%;background:var(--teal)"></div></div>
+          <span class="score-val">3/5</span>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text-faint);line-height:1.6">"The creative software market is shrinking." Partially true for point tools, but Adobe's TAM is expanding via GenStudio, AEP, and Express.</div>
+    </div>
+    <div class="bear-card">
+      <div class="bear-card-title">
+        <span style="font-size:18px">👤</span> CEO Uncertainty
+      </div>
+      <div style="margin-bottom:12px">
+        <div class="score-row">
+          <span class="score-label">Narrative</span>
+          <div class="score-bar-bg"><div class="score-bar-fill" style="width:80%;background:var(--amber)"></div></div>
+          <span class="score-val">4/5</span>
+        </div>
+        <div class="score-row">
+          <span class="score-label">Fundamental</span>
+          <div class="score-bar-bg"><div class="score-bar-fill" style="width:40%;background:var(--teal)"></div></div>
+          <span class="score-val">2/5</span>
+        </div>
+      </div>
+      <div style="font-size:12px;color:var(--text-faint);line-height:1.6">"Narayen stepping back creates leadership vacuum." Transition to Chair is planned, with Wadhwani as heir apparent. Not a crisis.</div>
+    </div>
+  </div>
+
+  <!-- Sentiment vs Fundamentals Scatter -->
+  <div class="chart-card fade-in">
+    <div class="chart-header">
+      <div class="chart-title">Sentiment vs. Fundamentals: The Mispricing Gap</div>
+      <div class="card-meta">Bear arguments mapped by narrative strength vs. fundamental evidence</div>
+    </div>
+    <div class="scatter-wrap">
+      <canvas id="scatterChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Analyst Consensus -->
+  <div class="card fade-in">
+    <div class="card-header">
+      <div class="card-title">Analyst Consensus</div>
+      <div style="display:flex;gap:16px;align-items:center">
+        <span class="badge badge-amber">Hold</span>
+        <span style="font-family:var(--font-mono);font-size:14px;font-weight:600;color:var(--text)">Avg PT: $312.87</span>
+        <span style="font-size:12px;color:var(--teal);font-weight:600">+29.9% upside</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:24px;margin-bottom:20px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:10px;height:10px;border-radius:2px;background:var(--teal)"></div>
+        <span style="font-size:12px;color:var(--text-muted)">Buy: 33%</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:10px;height:10px;border-radius:2px;background:var(--amber)"></div>
+        <span style="font-size:12px;color:var(--text-muted)">Hold: 53%</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:10px;height:10px;border-radius:2px;background:var(--red)"></div>
+        <span style="font-size:12px;color:var(--text-muted)">Sell: 13%</span>
+      </div>
+      <span style="font-size:12px;color:var(--text-faint)">15 analysts</span>
+    </div>
+
+    <!-- Consensus bar -->
+    <div style="height:8px;border-radius:4px;display:flex;overflow:hidden;margin-bottom:24px">
+      <div style="width:33.3%;background:var(--teal)"></div>
+      <div style="width:53.3%;background:var(--amber)"></div>
+      <div style="width:13.3%;background:var(--red)"></div>
+    </div>
+
+    <!-- Key Analyst Ratings Table -->
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Firm</th>
+          <th>Analyst</th>
+          <th>Rating</th>
+          <th style="text-align:right">Price Target</th>
+          <th style="text-align:right">Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Citigroup</td>
+          <td>Tyler Radke</td>
+          <td><span class="badge badge-amber">Neutral</span></td>
+          <td class="mono" style="text-align:right">$278</td>
+          <td style="text-align:right;color:var(--text-faint)">Mar 16</td>
+        </tr>
+        <tr>
+          <td>Goldman Sachs</td>
+          <td>Gabriela Borges</td>
+          <td><span class="badge badge-red">Sell</span></td>
+          <td class="mono" style="text-align:right">$220</td>
+          <td style="text-align:right;color:var(--text-faint)">Mar 16</td>
+        </tr>
+        <tr>
+          <td>UBS</td>
+          <td>Karl Keirstead</td>
+          <td><span class="badge badge-amber">Neutral</span></td>
+          <td class="mono" style="text-align:right">$290</td>
+          <td style="text-align:right;color:var(--text-faint)">Mar 13</td>
+        </tr>
+        <tr>
+          <td>Piper Sandler</td>
+          <td>Billy Fitzsimmons</td>
+          <td><span class="badge badge-amber">Neutral</span></td>
+          <td class="mono" style="text-align:right">$280</td>
+          <td style="text-align:right;color:var(--text-faint)">Mar 13</td>
+        </tr>
+        <tr>
+          <td>TD Cowen</td>
+          <td>Derrick Wood</td>
+          <td><span class="badge badge-amber">Hold</span></td>
+          <td class="mono" style="text-align:right">$325</td>
+          <td style="text-align:right;color:var(--text-faint)">Mar 10</td>
+        </tr>
+        <tr>
+          <td>BMO Capital</td>
+          <td>Keith Bachman</td>
+          <td><span class="badge badge-teal">Outperform</span></td>
+          <td class="mono" style="text-align:right">$400</td>
+          <td style="text-align:right;color:var(--text-faint)">Dec 15</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="chart-source" style="margin-top:16px">Source: <a href="https://perplexity.ai/finance/ADBE" target="_blank">Perplexity Finance</a>, Mar 30 2026</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     PANEL 2: THE NUMBERS
+     ═══════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="dash-section" id="numbers">
+  <div class="section-header fade-in">
+    <span class="section-number">02</span>
+    <h2 class="section-title">The Numbers — "What the Numbers Say"</h2>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="grid-5 fade-in" style="margin-bottom:24px">
+    <div class="kpi-card">
+      <div class="kpi-label">Q1 Revenue</div>
+      <div class="kpi-value">$6.40B</div>
+      <div class="kpi-delta positive">+12% YoY</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Total ARR</div>
+      <div class="kpi-value">$26.06B</div>
+      <div class="kpi-delta positive">+10.9% YoY</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Subscription Rev</div>
+      <div class="kpi-value">$6.17B</div>
+      <div class="kpi-delta positive">+13% YoY</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">FCF (Q1 Record)</div>
+      <div class="kpi-value">$2.96B</div>
+      <div class="kpi-delta positive">Record</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Non-GAAP EPS</div>
+      <div class="kpi-value">$6.06</div>
+      <div class="kpi-delta positive">+19% YoY</div>
+    </div>
+  </div>
+
+  <!-- Revenue/ARR/FCF Trend Chart -->
+  <div class="chart-card fade-in">
+    <div class="chart-header">
+      <div class="chart-title">Revenue, ARR & FCF — Quarterly Trend</div>
+      <div class="chart-meta">Q3 FY2025 → Q1 FY2026</div>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="revTrendChart"></canvas>
+    </div>
+    <div class="chart-source">Source: <a href="https://perplexity.ai/finance/ADBE" target="_blank">Adobe Q1 FY2026 Earnings Release</a>, Mar 2026</div>
+  </div>
+
+  <!-- Forward Estimates Table -->
+  <div class="card fade-in">
+    <div class="card-header">
+      <div class="card-title">Consensus Forward Estimates</div>
+      <div class="card-meta">Source: <a href="https://perplexity.ai/finance/ADBE" target="_blank">Perplexity Finance</a></div>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Fiscal Year</th>
+          <th style="text-align:right">Revenue</th>
+          <th style="text-align:right">Non-GAAP EPS</th>
+          <th style="text-align:right">EBITDA</th>
+          <th style="text-align:right">FCF</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>FY2026</strong></td>
+          <td class="mono" style="text-align:right">$26.06B</td>
+          <td class="mono" style="text-align:right">$25.58</td>
+          <td class="mono" style="text-align:right">$12.42B</td>
+          <td class="mono" style="text-align:right">$10.47B</td>
+        </tr>
+        <tr>
+          <td><strong>FY2027</strong></td>
+          <td class="mono" style="text-align:right">$28.36B</td>
+          <td class="mono" style="text-align:right">$28.25</td>
+          <td class="mono" style="text-align:right">$13.28B</td>
+          <td class="mono" style="text-align:right">$11.12B</td>
+        </tr>
+        <tr>
+          <td><strong>FY2028</strong></td>
+          <td class="mono" style="text-align:right">$30.75B</td>
+          <td class="mono" style="text-align:right">$32.38</td>
+          <td class="mono" style="text-align:right">$14.23B</td>
+          <td class="mono" style="text-align:right">$11.51B</td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="margin-top:16px;display:flex;gap:24px;flex-wrap:wrap">
+      <div style="font-size:12px;color:var(--text-faint)">Revenue CAGR (FY26-28): <span style="color:var(--teal);font-weight:600">~9%</span></div>
+      <div style="font-size:12px;color:var(--text-faint)">EPS CAGR (FY26-28): <span style="color:var(--teal);font-weight:600">~26%</span></div>
+    </div>
+  </div>
+
+  <!-- Historical P/E Chart -->
+  <div class="chart-card fade-in">
+    <div class="chart-header">
+      <div class="chart-title">P/E Multiple Compression: 51.8x → 14.0x</div>
+      <div class="chart-meta">10-Year Average: 45.5x</div>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="peChart"></canvas>
+    </div>
+    <div class="chart-source">Source: <a href="https://perplexity.ai/finance/ADBE" target="_blank">Perplexity Finance</a>, Mar 30 2026</div>
+  </div>
+
+  <!-- Shareholder Return -->
+  <div class="card fade-in">
+    <div class="card-header">
+      <div class="card-title">Shareholder Returns</div>
+    </div>
+    <div style="display:flex;gap:32px;flex-wrap:wrap">
+      <div>
+        <div style="font-size:12px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Q1 Shares Repurchased</div>
+        <div style="font-family:var(--font-mono);font-size:24px;font-weight:700;color:var(--text)">8.1M</div>
+      </div>
+      <div>
+        <div style="font-size:12px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Remaining Authorization</div>
+        <div style="font-family:var(--font-mono);font-size:24px;font-weight:700;color:var(--text)">$3.89B</div>
+      </div>
+      <div>
+        <div style="font-size:12px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Total $25B Auth</div>
+        <div style="font-family:var(--font-mono);font-size:24px;font-weight:700;color:var(--text)">~84%</div>
+        <div style="font-size:11px;color:var(--text-faint)">deployed</div>
+      </div>
+      <div>
+        <div style="font-size:12px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Total Shareholder Yield</div>
+        <div style="font-family:var(--font-mono);font-size:24px;font-weight:700;color:var(--teal)">~8%</div>
+      </div>
+    </div>
+    <div class="chart-source" style="margin-top:16px">Source: <a href="https://perplexity.ai/finance/ADBE" target="_blank">Adobe Q1 FY2026 Earnings Release</a></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     PANEL 3: AI SIGNAL
+     ═══════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="dash-section" id="ai-signal">
+  <div class="section-header fade-in">
+    <span class="section-number">03</span>
+    <h2 class="section-title">AI Signal — "AI Is a Tailwind, Not a Headwind"</h2>
+  </div>
+
+  <!-- AI Revenue Decomposition Chart -->
+  <div class="chart-card fade-in">
+    <div class="chart-header">
+      <div class="chart-title">AI Revenue & Engagement Progression</div>
+      <div class="chart-meta">Q3 FY2025 → Q1 FY2026</div>
+    </div>
+    <div class="chart-wrap" style="height:360px">
+      <canvas id="aiRevenueChart"></canvas>
+    </div>
+    <div class="chart-source">Source: <a href="https://perplexity.ai/finance/ADBE" target="_blank">Adobe Earnings Releases</a>, Q3 FY2025 – Q1 FY2026</div>
+  </div>
+
+  <!-- Growth Badges -->
+  <div class="growth-badges fade-in">
+    <div class="growth-badge">
+      <div class="growth-badge-value" style="color:var(--red)">8x</div>
+      <div class="growth-badge-label">Video Gen Actions YoY</div>
+    </div>
+    <div class="growth-badge">
+      <div class="growth-badge-value" style="color:var(--amber)">2x</div>
+      <div class="growth-badge-label">Audio Gen Actions YoY</div>
+    </div>
+    <div class="growth-badge">
+      <div class="growth-badge-value" style="color:var(--teal)">3x</div>
+      <div class="growth-badge-label">AI-First ARR Tripled YoY</div>
+    </div>
+    <div class="growth-badge">
+      <div class="growth-badge-value" style="color:var(--blue)">+75%</div>
+      <div class="growth-badge-label">Firefly ARR QoQ</div>
+    </div>
+    <div class="growth-badge">
+      <div class="growth-badge-value" style="color:var(--purple)">+45%</div>
+      <div class="growth-badge-label">Gen Credits QoQ</div>
+    </div>
+    <div class="growth-badge">
+      <div class="growth-badge-value" style="color:var(--green)">850M</div>
+      <div class="growth-badge-label">Total MAU (+17% YoY)</div>
+    </div>
+  </div>
+
+  <!-- Key AI Metrics by Quarter -->
+  <div class="card fade-in">
+    <div class="card-header">
+      <div class="card-title">AI Metric Progression by Quarter</div>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th style="text-align:right">Q3 FY2025</th>
+          <th style="text-align:right">Q4 FY2025</th>
+          <th style="text-align:right">Q1 FY2026</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Digital Media ARR</td>
+          <td class="mono" style="text-align:right">$18.59B</td>
+          <td class="mono" style="text-align:right">$19.20B</td>
+          <td class="mono" style="text-align:right;color:var(--teal)">—</td>
+        </tr>
+        <tr>
+          <td>Total Adobe ARR</td>
+          <td class="mono" style="text-align:right">—</td>
+          <td class="mono" style="text-align:right">—</td>
+          <td class="mono" style="text-align:right;color:var(--teal)">$26.06B</td>
+        </tr>
+        <tr>
+          <td>AI-Influenced ARR Share</td>
+          <td class="mono" style="text-align:right">—</td>
+          <td class="mono" style="text-align:right">&gt;33%</td>
+          <td class="mono" style="text-align:right;color:var(--teal)">Growing</td>
+        </tr>
+        <tr>
+          <td>Firefly Sub/Credit ARR</td>
+          <td class="mono" style="text-align:right">—</td>
+          <td class="mono" style="text-align:right">—</td>
+          <td class="mono" style="text-align:right;color:var(--teal)">$250M</td>
+        </tr>
+        <tr>
+          <td>Creative Premium MAU</td>
+          <td class="mono" style="text-align:right">—</td>
+          <td class="mono" style="text-align:right">70M</td>
+          <td class="mono" style="text-align:right;color:var(--teal)">80M (+50%)</td>
+        </tr>
+        <tr>
+          <td>GenStudio ARR Growth</td>
+          <td class="mono" style="text-align:right">+25%</td>
+          <td class="mono" style="text-align:right">+25%</td>
+          <td class="mono" style="text-align:right;color:var(--teal)">+30%</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="chart-source" style="margin-top:16px">Source: <a href="https://perplexity.ai/finance/ADBE" target="_blank">Adobe Earnings Releases</a></div>
+  </div>
+
+  <!-- Enterprise Adoption -->
+  <div class="grid-2 fade-in" style="margin-bottom:24px">
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title" style="margin-bottom:16px">Enterprise AI Adoption</div>
+      <div style="display:grid;gap:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--border)">
+          <span style="font-size:13px;color:var(--text-muted)">Firefly Enterprise New Customers</span>
+          <span style="font-family:var(--font-mono);font-weight:700;color:var(--teal)">+50% YoY</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--border)">
+          <span style="font-size:13px;color:var(--text-muted)">Custom Models Deployed</span>
+          <span style="font-family:var(--font-mono);font-weight:700;color:var(--text)">2,500+</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding-bottom:12px;border-bottom:1px solid var(--border)">
+          <span style="font-size:13px;color:var(--text-muted)">Express in Fortune 500</span>
+          <span style="font-family:var(--font-mono);font-weight:700;color:var(--text)">99%</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-size:13px;color:var(--text-muted)">$10M+ Enterprise Growth</span>
+          <span style="font-family:var(--font-mono);font-weight:700;color:var(--teal)">+20% YoY</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Narayen Quote -->
+    <div class="quote-card" style="margin-bottom:0;display:flex;flex-direction:column;justify-content:center">
+      <div class="quote-text">"AI first book of business tripled. That should be our next billion-dollar business."</div>
+      <div class="quote-attr">— Shantanu Narayen, CEO, Q1 FY2026 Earnings Call</div>
+    </div>
+  </div>
+
+  <!-- Canva Competitive Rebuttal -->
+  <div class="card fade-in">
+    <div class="card-header">
+      <div class="card-title">Canva Competitive Rebuttal</div>
+      <div><span class="badge badge-purple">Competitive Analysis</span></div>
+    </div>
+
+    <!-- Visual Comparison Bars -->
+    <div style="margin-bottom:24px">
+      <div class="comp-bar-row">
+        <div class="comp-bar-label">Adobe ARR</div>
+        <div class="comp-bar-track">
+          <div class="comp-bar-fill" style="width:100%;background:linear-gradient(90deg,var(--red),rgba(224,69,69,0.6));color:#fff">$26.06B</div>
+        </div>
+        <div class="comp-bar-value">$26.06B</div>
+      </div>
+      <div class="comp-bar-row">
+        <div class="comp-bar-label">Canva ARR</div>
+        <div class="comp-bar-track">
+          <div class="comp-bar-fill" style="width:15.3%;background:linear-gradient(90deg,var(--purple),rgba(167,139,250,0.6));color:#fff">$4B</div>
+        </div>
+        <div class="comp-bar-value">$4.00B</div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom:20px">
+      <div style="padding:16px;background:rgba(255,255,255,0.02);border-radius:var(--radius-sm);border:1px solid var(--border)">
+        <div style="font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">Market Share — Creative Software</div>
+        <div style="display:flex;align-items:baseline;gap:12px">
+          <span style="font-family:var(--font-mono);font-size:28px;font-weight:700;color:var(--red)">70%</span>
+          <span style="font-size:13px;color:var(--text-muted)">Adobe</span>
+          <span style="font-family:var(--font-mono);font-size:28px;font-weight:700;color:var(--purple);margin-left:auto">10%</span>
+          <span style="font-size:13px;color:var(--text-muted)">Canva</span>
+        </div>
+      </div>
+      <div style="padding:16px;background:rgba(255,255,255,0.02);border-radius:var(--radius-sm);border:1px solid var(--border)">
+        <div style="font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:8px">Canva B2B Segment</div>
+        <div style="font-family:var(--font-mono);font-size:28px;font-weight:700;color:var(--purple);margin-bottom:4px">$500M</div>
+        <div style="font-size:12px;color:var(--text-muted)">Growing 100% YoY — but targets entry-level, not enterprise pro workflows</div>
+      </div>
+    </div>
+
+    <div class="callout" style="background:linear-gradient(135deg,rgba(167,139,250,0.08),rgba(91,141,239,0.06));border-color:rgba(167,139,250,0.2)">
+      <div class="callout-title" style="color:var(--purple)">Key Insight</div>
+      <div class="callout-text">Canva is competing for the segment Adobe is deliberately serving with Express (freemium). Adobe's moat is enterprise precision tools and content supply chain. Canva at $4B ARR is ~15% of Adobe's total. Its B2B segment targets entry-level design — not the professional creative/enterprise CXO workflows that drive Adobe's core revenue.</div>
+    </div>
+    <div class="chart-source">Sources: <a href="https://www.saastr.com/canva-crosses-a-stunning-4b-arr-but-what-would-it-be-worth-today/" target="_blank">SaaStr</a>, <a href="https://techcrunch.com/2026/02/18/canva-gets-to-4b-in-revenue-as-llm-referral-traffic-rises/" target="_blank">TechCrunch</a> (Feb 2026)</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     PANEL 4: RISK & CONVICTION
+     ═══════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="dash-section" id="risk">
+  <div class="section-header fade-in">
+    <span class="section-number">04</span>
+    <h2 class="section-title">Risk & Conviction — Addressed Head-On</h2>
+  </div>
+
+  <!-- Section A: New Risk Factors -->
+  <div style="font-size:11px;font-weight:600;color:var(--amber);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:20px;font-family:var(--font-mono)" class="fade-in">New Risk Factors</div>
+
+  <div class="grid-2 fade-in" style="margin-bottom:32px">
+    <!-- CMA Investigation -->
+    <div class="risk-card" style="margin-bottom:0">
+      <div class="risk-header">
+        <span class="badge badge-amber">Regulatory</span>
+        <span class="badge" style="background:var(--green-dim);color:var(--green);border:1px solid rgba(109,170,69,0.2)">LOW IMPACT</span>
+        <span style="font-size:11px;color:var(--text-faint);margin-left:auto">Mar 19, 2026</span>
+      </div>
+      <div class="risk-title" style="margin-bottom:12px">UK CMA Investigation</div>
+      <div class="risk-body">
+        <p><strong>What:</strong> Investigation into cancellation fees on annual-billed-monthly plans — examining whether 50% of remaining annual cost as cancellation fee is unfair.</p>
+        <p><strong>Impact:</strong> LOW — Mirrors FTC settlement ($150M on Mar 13). No structural subscription changes required.</p>
+        <p><strong>Precedent:</strong> FTC settled for $75M fine + $75M free services. No admission of wrongdoing. Clearer ETF disclosure and simpler cancellation required.</p>
+      </div>
+      <div class="chart-source" style="margin-top:12px">Source: <a href="https://www.gov.uk/government/news/cma-investigates-adobe-over-concerns-about-cancellation-fees" target="_blank">UK CMA (gov.uk)</a></div>
+    </div>
+
+    <!-- Jefferies Downgrade -->
+    <div class="risk-card" style="margin-bottom:0">
+      <div class="risk-header">
+        <span class="badge badge-red">Downgrade</span>
+        <span class="badge badge-blue">Contrarian Signal</span>
+        <span style="font-size:11px;color:var(--text-faint);margin-left:auto">Jan 5, 2026</span>
+      </div>
+      <div class="risk-title" style="margin-bottom:12px">Jefferies: Buy → Hold (Brent Thill)</div>
+      <div class="risk-body">
+        <p><strong>What:</strong> Former street bull Brent Thill downgraded Buy→Hold, PT cut $500→$400.</p>
+        <p><strong>Contrarian signal:</strong> When the last bull capitulates, it often marks the bottom. Thill's $400 PT still implies <strong>+66% upside</strong>.</p>
+        <p><strong>Historical parallel:</strong> Morgan Stanley downgraded Microsoft in 2013 at $34 before the Nadella-led re-rating to $400+.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Section B: Institutional & Insider Conviction -->
+  <div style="font-size:11px;font-weight:600;color:var(--teal);text-transform:uppercase;letter-spacing:0.12em;margin-bottom:20px;font-family:var(--font-mono)" class="fade-in">Institutional & Insider Conviction</div>
+
+  <div class="card fade-in">
+    <div class="card-header">
+      <div class="card-title">Top Institutional Holders</div>
+      <div class="card-meta">2,687 total institutions</div>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Institution</th>
+          <th style="text-align:right">Shares</th>
+          <th style="text-align:right">Value</th>
+          <th style="text-align:right">QoQ Change</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Vanguard Group</strong></td>
+          <td class="mono" style="text-align:right">41.3M</td>
+          <td class="mono" style="text-align:right">$14.4B</td>
+          <td class="mono" style="text-align:right;color:var(--text-faint)">-0.21%</td>
+        </tr>
+        <tr>
+          <td><strong>BlackRock</strong></td>
+          <td class="mono" style="text-align:right">40.4M</td>
+          <td class="mono" style="text-align:right">$14.2B</td>
+          <td class="mono" style="text-align:right;color:var(--text-faint)">-0.23%</td>
+        </tr>
+        <tr>
+          <td><strong>State Street</strong></td>
+          <td class="mono" style="text-align:right">20.5M</td>
+          <td class="mono" style="text-align:right">$7.2B</td>
+          <td class="mono" style="text-align:right;color:var(--text-faint)">-0.77%</td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="margin-top:16px;font-size:13px;color:var(--text-faint);line-height:1.7">All top 3 trimmed positions by &lt;1% QoQ — standard index rebalancing, not conviction selling. The float is dominated by passive holders who will mechanically increase positions as the stock enters value screens at these depressed multiples.</div>
+  </div>
+
+  <!-- Insider Activity -->
+  <div class="card fade-in">
+    <div class="card-header">
+      <div class="card-title">Insider Activity (6 Months)</div>
+    </div>
+    <div style="display:flex;gap:32px;flex-wrap:wrap;margin-bottom:16px">
+      <div>
+        <div style="font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Transactions</div>
+        <div style="font-family:var(--font-mono);font-size:24px;font-weight:700;color:var(--text)">207</div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Type</div>
+        <div style="font-size:14px;font-weight:600;color:var(--text)">Routine</div>
+        <div style="font-size:11px;color:var(--text-faint)">Option exercises & tax withholding</div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Panic Selling</div>
+        <div style="font-family:var(--font-mono);font-size:24px;font-weight:700;color:var(--teal)">None</div>
+      </div>
+    </div>
+    <div style="font-size:13px;color:var(--text-faint);line-height:1.7">No significant open market buying or selling detected. All activity is M-EXEMPT (option exercises) and F-INKIND (tax withholding). No panic selling despite 65% decline. Narayen retaining Chair role signals continued skin in the game.</div>
+  </div>
+
+  <!-- Buyback Conviction -->
+  <div class="callout fade-in">
+    <div class="callout-title">Buyback Conviction</div>
+    <div class="callout-text">Adobe repurchased <strong>8.1M shares in Q1</strong> at these depressed prices. With $3.89B remaining of the $25B authorization, management is putting capital where their mouth is. At current prices, this represents the highest buyback yield (~8%) in Adobe's history.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     PANEL 5: CATALYSTS
+     ═══════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="dash-section" id="catalysts">
+  <div class="section-header fade-in">
+    <span class="section-number">05</span>
+    <h2 class="section-title">Catalysts — "What Changes the Narrative"</h2>
+  </div>
+
+  <!-- Timeline -->
+  <div style="position:relative;margin-bottom:40px" class="fade-in">
+    <div style="position:absolute;left:20px;top:0;bottom:0;width:2px;background:linear-gradient(180deg,var(--red),var(--amber),var(--teal));border-radius:1px"></div>
+
+    <!-- Catalyst 1: Adobe Summit -->
+    <div class="catalyst-card" style="margin-left:48px" onclick="toggleCatalyst(this)">
+      <div style="position:absolute;left:12px;width:18px;height:18px;border-radius:50%;background:var(--red);border:3px solid var(--bg)"></div>
+      <div class="catalyst-top">
+        <div>
+          <div class="catalyst-badges" style="margin-bottom:8px">
+            <span class="badge badge-blue">Product</span>
+            <span class="not-priced-in">NOT PRICED IN</span>
+          </div>
+          <div class="catalyst-name">Adobe Summit</div>
+          <div class="catalyst-timing">April 2026 — Imminent</div>
+        </div>
+      </div>
+      <div style="font-size:13px;color:var(--text-muted);line-height:1.6">Major product announcements expected. Enterprise AI product launches could accelerate GenStudio/AEP momentum. "We look forward to unveiling significant innovations and partnerships."</div>
+      <div class="catalyst-detail">
+        <div class="catalyst-detail-inner">
+          <div class="catalyst-outcomes">
+            <div class="outcome-card outcome-bull">
+              <div class="outcome-label">Bull Outcome</div>
+              New enterprise AI products announced. Firefly video/3D capabilities demonstrated. GenStudio Enterprise pipeline expands. Stock re-rates 10-15% on product enthusiasm.
+            </div>
+            <div class="outcome-card outcome-bear">
+              <div class="outcome-label">Bear Outcome</div>
+              Incremental updates only. No breakthrough announcements. Market yawns. Limited price impact.
+            </div>
+          </div>
+          <div style="margin-top:12px;font-size:12px;color:var(--text-faint)">Probability: <strong style="color:var(--text)">High</strong> | Impact: <strong style="color:var(--teal)">Moderate-High</strong></div>
+        </div>
+      </div>
+      <div class="catalyst-hint" style="text-align:center;margin-top:12px;font-size:11px;color:var(--text-faint)">Click to expand ▾</div>
+    </div>
+
+    <!-- Catalyst 2: CEO Successor -->
+    <div class="catalyst-card" style="margin-left:48px" onclick="toggleCatalyst(this)">
+      <div style="position:absolute;left:12px;width:18px;height:18px;border-radius:50%;background:var(--amber);border:3px solid var(--bg)"></div>
+      <div class="catalyst-top">
+        <div>
+          <div class="catalyst-badges" style="margin-bottom:8px">
+            <span class="badge badge-amber">Leadership</span>
+            <span class="not-priced-in">NOT PRICED IN</span>
+          </div>
+          <div class="catalyst-name">CEO Successor Named</div>
+          <div class="catalyst-timing">Q2-Q3 2026 (April – August)</div>
+        </div>
+      </div>
+      <div style="font-size:13px;color:var(--text-muted);line-height:1.6">David Wadhwani is the heir apparent (per Morningstar). Internal AI-focused successor mirrors the Microsoft/Nadella playbook that unlocked a 10x re-rating.</div>
+      <div class="catalyst-detail">
+        <div class="catalyst-detail-inner">
+          <div class="catalyst-outcomes">
+            <div class="outcome-card outcome-bull">
+              <div class="outcome-label">Bull Outcome</div>
+              Wadhwani named CEO. AI-first strategy confirmed. Market sees Nadella parallel. Multiple begins re-expanding from 14x toward 20x+. 30-40% upside potential.
+            </div>
+            <div class="outcome-card outcome-bear">
+              <div class="outcome-label">Bear Outcome</div>
+              External hire with different strategy. Market interprets as lack of internal bench strength. Uncertainty extends. Stock remains range-bound.
+            </div>
+          </div>
+          <div style="margin-top:12px;font-size:12px;color:var(--text-faint)">Probability: <strong style="color:var(--text)">High</strong> | Impact: <strong style="color:var(--teal)">High</strong></div>
+        </div>
+      </div>
+      <div class="catalyst-hint" style="text-align:center;margin-top:12px;font-size:11px;color:var(--text-faint)">Click to expand ▾</div>
+    </div>
+
+    <!-- Catalyst 3: Q2 Earnings -->
+    <div class="catalyst-card" style="margin-left:48px" onclick="toggleCatalyst(this)">
+      <div style="position:absolute;left:12px;width:18px;height:18px;border-radius:50%;background:var(--teal);border:3px solid var(--bg)"></div>
+      <div class="catalyst-top">
+        <div>
+          <div class="catalyst-badges" style="margin-bottom:8px">
+            <span class="badge badge-teal">Financial</span>
+            <span class="not-priced-in">NOT PRICED IN</span>
+          </div>
+          <div class="catalyst-name">Q2 FY2026 Earnings</div>
+          <div class="catalyst-timing">Mid-June 2026</div>
+        </div>
+      </div>
+      <div style="font-size:13px;color:var(--text-muted);line-height:1.6">Guidance: $6.43-6.48B revenue, $5.80-5.85 non-GAAP EPS. Critical metric: If AI-influenced ARR crosses 40% (from 33%), the disruption narrative inverts. Firefly at $250M growing 75% QoQ — on pace for $500M+ by year-end.</div>
+      <div class="catalyst-detail">
+        <div class="catalyst-detail-inner">
+          <div class="catalyst-outcomes">
+            <div class="outcome-card outcome-bull">
+              <div class="outcome-label">Bull Outcome</div>
+              AI-influenced ARR crosses 40%. Firefly ARR approaches $400M+. Revenue beat and raise. The "AI headwind" narrative definitively inverts. 15-25% upside.
+            </div>
+            <div class="outcome-card outcome-bear">
+              <div class="outcome-label">Bear Outcome</div>
+              In-line results. AI metrics grow but don't accelerate. Guidance maintained, not raised. Limited catalyst for re-rating. Stock treads water.
+            </div>
+          </div>
+          <div style="margin-top:12px;font-size:12px;color:var(--text-faint)">Probability: <strong style="color:var(--text)">High</strong> | Impact: <strong style="color:var(--teal)">Very High</strong></div>
+        </div>
+      </div>
+      <div class="catalyst-hint" style="text-align:center;margin-top:12px;font-size:11px;color:var(--text-faint)">Click to expand ▾</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     PANEL 6: PRICE TARGET
+     ═══════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="dash-section" id="valuation">
+  <div class="section-header fade-in">
+    <span class="section-number">06</span>
+    <h2 class="section-title">Price Target — "What It's Worth"</h2>
+  </div>
+
+  <!-- Scenario Toggles -->
+  <div class="scenario-toggles fade-in">
+    <button class="scenario-btn active-bear" onclick="setScenario('bear')" id="btnBear">Bear (25%)</button>
+    <button class="scenario-btn active-base" onclick="setScenario('base')" id="btnBase">Base (50%)</button>
+    <button class="scenario-btn active-bull" onclick="setScenario('bull')" id="btnBull">Bull (25%)</button>
+  </div>
+
+  <!-- Scenario Display -->
+  <div class="card fade-in" id="scenarioCard">
+    <div style="display:flex;gap:40px;flex-wrap:wrap;align-items:center">
+      <div>
+        <div style="font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Target Price</div>
+        <div id="scenarioPrice" style="font-family:var(--font-mono);font-size:48px;font-weight:800;color:var(--text);letter-spacing:-0.03em">$629</div>
+        <div id="scenarioReturn" style="font-size:16px;font-weight:600;color:var(--teal);margin-top:4px">+161% upside</div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--text-faint);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px">Method</div>
+        <div id="scenarioMethod" style="font-size:14px;color:var(--text-muted);line-height:1.6">Probability-weighted expected value: (25% × $424) + (50% × $622) + (25% × $848) = $629</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scenario Matrix -->
+  <div class="card fade-in">
+    <div class="card-header">
+      <div class="card-title">Scenario Matrix — FY2027 EPS × Forward P/E</div>
+    </div>
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Scenario</th>
+          <th style="text-align:right">Probability</th>
+          <th style="text-align:right">P/E Multiple</th>
+          <th style="text-align:right">FY2027 EPS</th>
+          <th style="text-align:right">Implied Price</th>
+          <th style="text-align:right">Return</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="badge badge-red">Bear</span></td>
+          <td class="mono" style="text-align:right">25%</td>
+          <td class="mono" style="text-align:right">15x</td>
+          <td class="mono" style="text-align:right">$28.25</td>
+          <td class="mono" style="text-align:right;color:var(--red)">$424</td>
+          <td class="mono" style="text-align:right;color:var(--teal)">+76%</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-blue">Base</span></td>
+          <td class="mono" style="text-align:right">50%</td>
+          <td class="mono" style="text-align:right">22x</td>
+          <td class="mono" style="text-align:right">$28.25</td>
+          <td class="mono" style="text-align:right;color:var(--blue)">$622</td>
+          <td class="mono" style="text-align:right;color:var(--teal)">+158%</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-teal">Bull</span></td>
+          <td class="mono" style="text-align:right">25%</td>
+          <td class="mono" style="text-align:right">30x</td>
+          <td class="mono" style="text-align:right">$28.25</td>
+          <td class="mono" style="text-align:right;color:var(--teal)">$848</td>
+          <td class="mono" style="text-align:right;color:var(--teal)">+252%</td>
+        </tr>
+        <tr style="border-top:2px solid var(--border)">
+          <td><strong style="color:var(--text)">Expected Value</strong></td>
+          <td class="mono" style="text-align:right">100%</td>
+          <td class="mono" style="text-align:right">—</td>
+          <td class="mono" style="text-align:right">$28.25</td>
+          <td class="mono" style="text-align:right;color:var(--text);font-weight:700">$629</td>
+          <td class="mono" style="text-align:right;color:var(--teal);font-weight:700">+161%</td>
+        </tr>
+      </tbody>
+    </table>
+    <div style="margin-top:16px;font-size:12px;color:var(--text-faint);line-height:1.7">
+      <strong style="color:var(--amber)">Key context:</strong> Even the bear case (15x) is BELOW the current peer minimum (CRM at 23.6x). This means even assuming the worst-case scenario, Adobe remains undervalued relative to its peer group.
+    </div>
+  </div>
+
+  <!-- FCF / Forward P/E Context -->
+  <div class="grid-2 fade-in">
+    <div class="card" style="margin-bottom:0">
+      <div class="card-title" style="margin-bottom:16px">Valuation Context</div>
+      <div style="display:grid;gap:16px">
+        <div style="display:flex;justify-content:space-between;padding-bottom:12px;border-bottom:1px solid var(--border)">
+          <span style="font-size:13px;color:var(--text-muted)">Forward P/E (FY2026)</span>
+          <span style="font-family:var(--font-mono);font-weight:700;color:var(--red)">9.4x</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding-bottom:12px;border-bottom:1px solid var(--border)">
+          <span style="font-size:13px;color:var(--text-muted)">Forward P/E (FY2027)</span>
+          <span style="font-family:var(--font-mono);font-weight:700;color:var(--red)">8.5x</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding-bottom:12px;border-bottom:1px solid var(--border)">
+          <span style="font-size:13px;color:var(--text-muted)">FCF Yield</span>
+          <span style="font-family:var(--font-mono);font-weight:700;color:var(--teal)">10.7%</span>
+        </div>
+        <div style="display:flex;justify-content:space-between">
+          <span style="font-size:13px;color:var(--text-muted)">FCF Yield Note</span>
+          <span style="font-size:12px;color:var(--amber);font-weight:600">Highest in ADBE History</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Why Now callout -->
+    <div class="callout" style="margin-bottom:0;background:linear-gradient(135deg,rgba(224,69,69,0.08),rgba(232,168,56,0.06));border-color:rgba(224,69,69,0.2)">
+      <div class="callout-title" style="color:var(--red)">Why Now</div>
+      <div class="callout-text">At 9.4x forward earnings with a 10.7% FCF yield, Adobe trades like a declining business. Consensus expects 9% revenue CAGR and 26% EPS CAGR through FY2028. This is a compounder priced as a cigar butt.</div>
+    </div>
+  </div>
+
+  <!-- Scenario Range Visual -->
+  <div class="card fade-in" style="margin-top:20px">
+    <div class="card-title" style="margin-bottom:24px">Scenario Range vs. Current Price</div>
+    <div style="display:grid;gap:14px">
+      <div class="comp-bar-row">
+        <div class="comp-bar-label" style="width:130px">Current</div>
+        <div class="comp-bar-track" style="height:32px">
+          <div class="comp-bar-fill" style="width:26.8%;background:rgba(138,136,146,0.5);color:var(--text)">$240.88</div>
+        </div>
+      </div>
+      <div class="comp-bar-row">
+        <div class="comp-bar-label" style="width:130px;color:var(--red)">Bear (15x)</div>
+        <div class="comp-bar-track" style="height:32px">
+          <div class="comp-bar-fill" style="width:47.1%;background:linear-gradient(90deg,rgba(224,69,69,0.7),rgba(224,69,69,0.4));color:#fff">$424 (+76%)</div>
+        </div>
+      </div>
+      <div class="comp-bar-row">
+        <div class="comp-bar-label" style="width:130px;color:var(--blue)">Base (22x)</div>
+        <div class="comp-bar-track" style="height:32px">
+          <div class="comp-bar-fill" style="width:69.1%;background:linear-gradient(90deg,rgba(91,141,239,0.7),rgba(91,141,239,0.4));color:#fff">$622 (+158%)</div>
+        </div>
+      </div>
+      <div class="comp-bar-row">
+        <div class="comp-bar-label" style="width:130px;color:var(--teal)">Bull (30x)</div>
+        <div class="comp-bar-track" style="height:32px">
+          <div class="comp-bar-fill" style="width:94.2%;background:linear-gradient(90deg,rgba(45,212,168,0.7),rgba(45,212,168,0.4));color:#fff">$848 (+252%)</div>
+        </div>
+      </div>
+      <div class="comp-bar-row">
+        <div class="comp-bar-label" style="width:130px;color:var(--amber);font-weight:700">Expected</div>
+        <div class="comp-bar-track" style="height:32px">
+          <div class="comp-bar-fill" style="width:69.9%;background:linear-gradient(90deg,rgba(232,168,56,0.8),rgba(232,168,56,0.5));color:#fff;font-weight:700">$629 (+161%)</div>
+        </div>
+      </div>
+    </div>
+    <div class="chart-source" style="margin-top:16px">Source: Author scenario analysis using consensus FY2027 EPS estimates from <a href="https://perplexity.ai/finance/ADBE" target="_blank">Perplexity Finance</a></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     PANEL 7: THE BOTTOM LINE
+     ═══════════════════════════════════════ -->
+<div class="section-divider"></div>
+<section class="dash-section" id="bottom-line">
+  <div class="section-header fade-in">
+    <span class="section-number">07</span>
+    <h2 class="section-title">The Bottom Line</h2>
+  </div>
+
+  <!-- Thesis Statement -->
+  <div class="thesis-box fade-in">
+    <div class="thesis-text">Adobe is the cheapest large-cap application software stock in the market, trading at a 61% discount to peers while growing revenue 12%, generating $10B+ in annual FCF, and tripling its AI-first business.</div>
+  </div>
+
+  <!-- Big Metrics -->
+  <div class="big-metrics fade-in">
+    <div class="big-metric">
+      <div class="big-metric-value" style="color:var(--red)">14x</div>
+      <div class="big-metric-label">P/E Ratio</div>
+    </div>
+    <div class="big-metric">
+      <div class="big-metric-value" style="color:var(--teal)">10.7%</div>
+      <div class="big-metric-label">FCF Yield</div>
+    </div>
+    <div class="big-metric">
+      <div class="big-metric-value" style="color:var(--amber)">3x</div>
+      <div class="big-metric-label">AI-First ARR Growth</div>
+    </div>
+    <div class="big-metric">
+      <div class="big-metric-value" style="color:var(--blue)">161%</div>
+      <div class="big-metric-label">Expected Return</div>
+    </div>
+  </div>
+
+  <!-- What Breaks the Thesis -->
+  <div class="card fade-in">
+    <div class="card-header">
+      <div class="card-title" style="color:var(--red)">What Breaks the Thesis</div>
+      <div class="card-meta">Honest risk disclosure</div>
+    </div>
+    <div style="display:grid;gap:16px">
+      <div style="display:flex;gap:14px;align-items:flex-start">
+        <div style="width:28px;height:28px;border-radius:50%;background:var(--red-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:700;color:var(--red)">1</div>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px">CEO succession goes poorly</div>
+          <div style="font-size:13px;color:var(--text-faint);line-height:1.6">An external hire with a fundamentally different strategy (e.g., cost-cutting vs. AI investment) would delay the re-rating and potentially impair long-term growth.</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:14px;align-items:flex-start">
+        <div style="width:28px;height:28px;border-radius:50%;background:var(--red-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:700;color:var(--red)">2</div>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px">Firefly ARR growth decelerates materially</div>
+          <div style="font-size:13px;color:var(--text-faint);line-height:1.6">If Firefly ARR stalls below $500M or AI-influenced ARR share fails to reach 40%, the "AI tailwind" narrative weakens and the re-rating timeline extends.</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:14px;align-items:flex-start">
+        <div style="width:28px;height:28px;border-radius:50%;background:var(--red-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:700;color:var(--red)">3</div>
+        <div>
+          <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px">Enterprise NRR drops below 100%</div>
+          <div style="font-size:13px;color:var(--text-faint);line-height:1.6">Net revenue retention falling below 100% would signal actual customer attrition — validating the bear case that AI tools are replacing rather than augmenting Adobe's platform.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Methodology & Sources -->
+  <div class="card fade-in">
+    <div class="card-header">
+      <div class="card-title">Methodology & Sources</div>
+    </div>
+    <div style="font-size:13px;color:var(--text-faint);line-height:1.8">
+      <p style="margin-bottom:12px">This thesis uses a P/E-based scenario analysis applied to consensus FY2027 EPS estimates ($28.25). Three scenarios are probability-weighted: Bear (25% at 15x P/E), Base (50% at 22x P/E), Bull (25% at 30x P/E). The "market-implied disruption probability" is derived from the discount of ADBE's current P/E (14.03x) to the peer median (35.85x).</p>
+      <div style="display:grid;gap:8px">
+        <div><strong style="color:var(--text)">Financial Data:</strong> <a href="https://perplexity.ai/finance/ADBE" target="_blank" style="color:var(--blue);text-decoration:underline">Perplexity Finance (ADBE)</a> — Price, P/E, estimates, analyst ratings</div>
+        <div><strong style="color:var(--text)">Earnings Data:</strong> <a href="https://perplexity.ai/finance/ADBE" target="_blank" style="color:var(--blue);text-decoration:underline">Adobe Q1 FY2026 Earnings Release</a> — Revenue, ARR, FCF, AI metrics, buyback data</div>
+        <div><strong style="color:var(--text)">CMA Investigation:</strong> <a href="https://www.gov.uk/government/news/cma-investigates-adobe-over-concerns-about-cancellation-fees" target="_blank" style="color:var(--blue);text-decoration:underline">UK CMA (gov.uk)</a>, March 19, 2026</div>
+        <div><strong style="color:var(--text)">Canva Data:</strong> <a href="https://www.saastr.com/canva-crosses-a-stunning-4b-arr-but-what-would-it-be-worth-today/" target="_blank" style="color:var(--blue);text-decoration:underline">SaaStr</a> and <a href="https://techcrunch.com/2026/02/18/canva-gets-to-4b-in-revenue-as-llm-referral-traffic-rises/" target="_blank" style="color:var(--blue);text-decoration:underline">TechCrunch</a>, February 2026</div>
+      </div>
+    </div>
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);font-size:11px;color:var(--text-dim)">
+      Data as of March 30, 2026. This is not financial advice. Past performance does not guarantee future results.
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════
+     FOOTER
+     ═══════════════════════════════════════ -->
+<footer class="dash-footer">
+  <div class="footer-inner">
+    <div class="footer-method">
+      <h4>Methodology</h4>
+      <p>P/E-based scenario analysis with probability-weighted expected value. Bear/Base/Bull scenarios use FY2027 consensus EPS of $28.25 applied at 15x/22x/30x forward multiples. Market-implied disruption probability derived from ADBE P/E discount to application software peer median. All financial data sourced from company filings and consensus estimates.</p>
+    </div>
+    <div class="footer-brand">
+      <a href="https://www.perplexity.ai/computer" target="_blank">Built with Perplexity Computer</a>
+      <div class="footer-date">March 30, 2026</div>
+    </div>
+  </div>
+</footer>
+
+<!-- ═══════════════════════════════════════
+     JAVASCRIPT
+     ═══════════════════════════════════════ -->
+<script>
+// ---- CHART DEFAULTS ----
+Chart.defaults.color = '#8A8892';
+Chart.defaults.borderColor = 'rgba(42,41,48,0.5)';
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.font.size = 11;
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+Chart.defaults.plugins.legend.labels.pointStyle = 'circle';
+Chart.defaults.plugins.legend.labels.padding = 16;
+Chart.defaults.plugins.tooltip.backgroundColor = '#1A191E';
+Chart.defaults.plugins.tooltip.borderColor = '#2A2930';
+Chart.defaults.plugins.tooltip.borderWidth = 1;
+Chart.defaults.plugins.tooltip.cornerRadius = 8;
+Chart.defaults.plugins.tooltip.padding = 12;
+Chart.defaults.plugins.tooltip.titleFont = { family: "'Inter', sans-serif", size: 12, weight: '600' };
+Chart.defaults.plugins.tooltip.bodyFont = { family: "'JetBrains Mono', monospace", size: 12 };
+Chart.defaults.scale.grid = { color: 'rgba(42,41,48,0.4)' };
+
+// ---- 1. DRAWDOWN CHART ----
+(function(){
+  const ctx = document.getElementById('drawdownChart').getContext('2d');
+  const labels = ['Nov 21','','Feb 22','','May 22','','Aug 22','','Nov 22','','Feb 23','','May 23','','Aug 23','','Nov 23','','Feb 24','','May 24','','Aug 24','','Nov 24','','Feb 25','','May 25','','Aug 25','','Nov 25','','Feb 26','Mar 26'];
+  const prices = [688, 660, 590, 540, 430, 390, 340, 310, 340, 350, 380, 390, 420, 480, 530, 570, 600, 580, 560, 540, 510, 480, 450, 480, 520, 490, 430, 400, 380, 360, 340, 310, 280, 260, 241];
+  const gradient = ctx.createLinearGradient(0, 0, 0, 320);
+  gradient.addColorStop(0, 'rgba(224,69,69,0.25)');
+  gradient.addColorStop(1, 'rgba(224,69,69,0)');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: prices,
+        borderColor: '#E04545',
+        borderWidth: 2,
+        backgroundColor: gradient,
+        fill: true,
+        tension: 0.3,
+        pointRadius: 0,
+        pointHoverRadius: 5,
+        pointHoverBackgroundColor: '#E04545',
+        pointHoverBorderColor: '#E8E6ED',
+        pointHoverBorderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        annotation: {
+          annotations: {
+            peakLine: {
+              type: 'line', yMin: 688, yMax: 688,
+              borderColor: 'rgba(232,168,56,0.4)', borderWidth: 1, borderDash: [6,4],
+              label: { display: true, content: 'Peak: $688', position: 'start', backgroundColor: 'transparent', color: '#E8A838', font: { size: 11, family: "'JetBrains Mono', monospace" } }
+            },
+            currentLine: {
+              type: 'line', yMin: 241, yMax: 241,
+              borderColor: 'rgba(224,69,69,0.4)', borderWidth: 1, borderDash: [6,4],
+              label: { display: true, content: 'Current: $240.88', position: 'end', backgroundColor: 'transparent', color: '#E04545', font: { size: 11, family: "'JetBrains Mono', monospace" } }
+            }
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { maxRotation: 0, autoSkip: true, maxTicksLimit: 8 } },
+        y: { ticks: { callback: v => '$' + v }, min: 200, max: 750 }
+      }
+    }
+  });
+})();
+
+// ---- 2. SCATTER CHART ----
+(function(){
+  const ctx = document.getElementById('scatterChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'scatter',
+    data: {
+      datasets: [{
+        label: 'Bear Arguments',
+        data: [
+          { x: 5, y: 2, label: 'AI Disruption' },
+          { x: 4, y: 3, label: 'TAM Compression' },
+          { x: 4, y: 2, label: 'CEO Uncertainty' }
+        ],
+        backgroundColor: ['#E04545', '#E8A838', '#A78BFA'],
+        pointRadius: 14,
+        pointHoverRadius: 18
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              const labels = ['AI Disruption', 'TAM Compression', 'CEO Uncertainty'];
+              return labels[ctx.dataIndex] + ': Narrative ' + ctx.parsed.x + '/5, Fundamental ' + ctx.parsed.y + '/5';
+            }
+          }
+        },
+        annotation: {
+          annotations: {
+            mispricing: {
+              type: 'box', xMin: 3.5, xMax: 5.5, yMin: 0.5, yMax: 2.5,
+              backgroundColor: 'rgba(224,69,69,0.06)', borderColor: 'rgba(224,69,69,0.15)', borderWidth: 1, borderDash: [4,4],
+              label: { display: true, content: 'MISPRICING ZONE', position: { x: 'center', y: 'start' }, color: 'rgba(224,69,69,0.5)', font: { size: 10, weight: '700', family: "'JetBrains Mono', monospace" } }
+            }
+          }
+        }
+      },
+      scales: {
+        x: { title: { display: true, text: 'Narrative Strength →', color: '#8A8892', font: { size: 12 } }, min: 0, max: 6, ticks: { stepSize: 1 } },
+        y: { title: { display: true, text: 'Fundamental Support →', color: '#8A8892', font: { size: 12 } }, min: 0, max: 6, ticks: { stepSize: 1 } }
+      }
+    }
+  });
+})();
+
+// ---- 3. REVENUE/ARR/FCF TREND ----
+(function(){
+  const ctx = document.getElementById('revTrendChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Q3 FY2025', 'Q4 FY2025', 'Q1 FY2026'],
+      datasets: [
+        {
+          label: 'DM ARR ($B)',
+          data: [18.59, 19.20, null],
+          backgroundColor: 'rgba(91,141,239,0.7)',
+          borderRadius: 4,
+          barPercentage: 0.7,
+          categoryPercentage: 0.6
+        },
+        {
+          label: 'Total ARR ($B)',
+          data: [null, null, 26.06],
+          backgroundColor: 'rgba(45,212,168,0.7)',
+          borderRadius: 4,
+          barPercentage: 0.7,
+          categoryPercentage: 0.6
+        },
+        {
+          label: 'Revenue ($B)',
+          type: 'line',
+          data: [null, 5.94, 6.40],
+          borderColor: '#E8A838',
+          backgroundColor: 'transparent',
+          borderWidth: 2.5,
+          pointRadius: 5,
+          pointBackgroundColor: '#E8A838',
+          tension: 0.3,
+          yAxisID: 'y1'
+        },
+        {
+          label: 'FCF ($B)',
+          type: 'line',
+          data: [null, null, 2.96],
+          borderColor: '#A78BFA',
+          backgroundColor: 'transparent',
+          borderWidth: 2.5,
+          pointRadius: 5,
+          pointBackgroundColor: '#A78BFA',
+          tension: 0.3,
+          yAxisID: 'y1'
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { position: 'top' } },
+      scales: {
+        y: { title: { display: true, text: 'ARR ($B)' }, min: 0, max: 30 },
+        y1: { position: 'right', title: { display: true, text: 'Quarterly ($B)' }, min: 0, max: 10, grid: { drawOnChartArea: false } },
+        x: {}
+      }
+    }
+  });
+})();
+
+// ---- 4. P/E CHART ----
+(function(){
+  const ctx = document.getElementById('peChart').getContext('2d');
+  const gradient = ctx.createLinearGradient(0, 0, 0, 300);
+  gradient.addColorStop(0, 'rgba(224,69,69,0.2)');
+  gradient.addColorStop(1, 'rgba(224,69,69,0)');
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: ['FY2023', 'FY2024', 'FY2025', 'Current'],
+      datasets: [{
+        label: 'P/E Ratio',
+        data: [51.82, 41.74, 19.17, 14.03],
+        borderColor: '#E04545',
+        backgroundColor: gradient,
+        fill: true,
+        borderWidth: 2.5,
+        pointRadius: 6,
+        pointBackgroundColor: ['#E04545','#E04545','#E04545','#E04545'],
+        pointBorderColor: '#1A191E',
+        pointBorderWidth: 2,
+        tension: 0.3
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        annotation: {
+          annotations: {
+            avgLine: {
+              type: 'line', yMin: 45.5, yMax: 45.5,
+              borderColor: 'rgba(232,168,56,0.5)', borderWidth: 1.5, borderDash: [8,4],
+              label: { display: true, content: '10-Year Avg: 45.5x', position: 'start', backgroundColor: 'transparent', color: '#E8A838', font: { size: 11, family: "'JetBrains Mono', monospace" } }
+            }
+          }
+        }
+      },
+      scales: {
+        y: { ticks: { callback: v => v + 'x' }, min: 0, max: 60 }
+      }
+    }
+  });
+})();
+
+// ---- 5. AI REVENUE DECOMPOSITION CHART ----
+(function(){
+  const ctx = document.getElementById('aiRevenueChart').getContext('2d');
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Q3 FY2025', 'Q4 FY2025', 'Q1 FY2026'],
+      datasets: [
+        {
+          label: 'DM ARR ($B)',
+          data: [18.59, 19.20, null],
+          backgroundColor: 'rgba(91,141,239,0.6)',
+          borderRadius: 4,
+          barPercentage: 0.5,
+          categoryPercentage: 0.7,
+          stack: 'arr'
+        },
+        {
+          label: 'Total ARR ($B)',
+          data: [null, null, 26.06],
+          backgroundColor: 'rgba(45,212,168,0.6)',
+          borderRadius: 4,
+          barPercentage: 0.5,
+          categoryPercentage: 0.7,
+          stack: 'arr'
+        },
+        {
+          label: 'Firefly ARR ($M)',
+          type: 'line',
+          data: [null, null, 250],
+          borderColor: '#E8A838',
+          backgroundColor: 'transparent',
+          borderWidth: 3,
+          pointRadius: 8,
+          pointBackgroundColor: '#E8A838',
+          pointBorderColor: '#1A191E',
+          pointBorderWidth: 2,
+          yAxisID: 'y1'
+        },
+        {
+          label: 'Creative Premium MAU (M)',
+          type: 'line',
+          data: [null, 70, 80],
+          borderColor: '#A78BFA',
+          backgroundColor: 'transparent',
+          borderWidth: 2.5,
+          pointRadius: 6,
+          pointBackgroundColor: '#A78BFA',
+          pointBorderColor: '#1A191E',
+          pointBorderWidth: 2,
+          yAxisID: 'y1',
+          borderDash: [6,3]
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'top' },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              if (ctx.dataset.label.includes('Firefly')) return ctx.dataset.label + ': $' + ctx.parsed.y + 'M';
+              if (ctx.dataset.label.includes('MAU')) return ctx.dataset.label + ': ' + ctx.parsed.y + 'M';
+              if (ctx.parsed.y !== null) return ctx.dataset.label + ': $' + ctx.parsed.y + 'B';
+              return '';
+            }
+          }
+        }
+      },
+      scales: {
+        y: { title: { display: true, text: 'ARR ($B)' }, min: 0, max: 30 },
+        y1: { position: 'right', title: { display: true, text: 'Firefly ($M) / MAU (M)' }, min: 0, max: 300, grid: { drawOnChartArea: false } }
+      }
+    }
+  });
+})();
+
+// Scenario chart replaced with CSS bars
+
+// ---- SCROLL SPY ----
+(function(){
+  const sections = document.querySelectorAll('.dash-section');
+  const tabs = document.querySelectorAll('.nav-tab');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        tabs.forEach(t => t.classList.remove('active'));
+        const activeTab = document.querySelector('.nav-tab[href="#' + id + '"]');
+        if (activeTab) activeTab.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-80px 0px -60% 0px', threshold: 0 });
+  sections.forEach(s => observer.observe(s));
+})();
+
+// ---- FADE-IN ON SCROLL ----
+(function(){
+  const fadeEls = document.querySelectorAll('.fade-in');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { rootMargin: '0px 0px -60px 0px', threshold: 0.1 });
+  fadeEls.forEach(el => observer.observe(el));
+})();
+
+// ---- CATALYST EXPAND/COLLAPSE ----
+function toggleCatalyst(card) {
+  const detail = card.querySelector('.catalyst-detail');
+  const hint = card.querySelector('.catalyst-hint');
+  if (detail.classList.contains('open')) {
+    detail.classList.remove('open');
+    hint.textContent = 'Click to expand ▾';
+  } else {
+    detail.classList.add('open');
+    hint.textContent = 'Click to collapse ▴';
+  }
+}
+
+// ---- SCENARIO TOGGLE ----
+const scenarios = {
+  bear: { price: '$424', return: '+76% upside', method: 'Bear case: 15x forward P/E × $28.25 FY2027 EPS = $424. Even this floor is BELOW the lowest peer multiple (CRM at 23.6x).', color: '#E04545' },
+  base: { price: '$622', return: '+158% upside', method: 'Base case: 22x forward P/E × $28.25 FY2027 EPS = $622. A 22x multiple is still a ~39% discount to the peer median of 35.85x.', color: '#5B8DEF' },
+  bull: { price: '$848', return: '+252% upside', method: 'Bull case: 30x forward P/E × $28.25 FY2027 EPS = $848. A 30x multiple is still below the 10-year average of 45.5x — requires only partial re-rating.', color: '#2DD4A8' }
+};
+let activeScenarios = new Set(['bear', 'base', 'bull']);
+
+function setScenario(scenario) {
+  // Toggle
+  if (activeScenarios.has(scenario)) {
+    if (activeScenarios.size > 1) activeScenarios.delete(scenario);
+  } else {
+    activeScenarios.add(scenario);
+  }
+
+  // Update buttons
+  document.getElementById('btnBear').className = 'scenario-btn' + (activeScenarios.has('bear') ? ' active-bear' : '');
+  document.getElementById('btnBase').className = 'scenario-btn' + (activeScenarios.has('base') ? ' active-base' : '');
+  document.getElementById('btnBull').className = 'scenario-btn' + (activeScenarios.has('bull') ? ' active-bull' : '');
+
+  // Show the last toggled scenario details
+  const s = scenarios[scenario];
+  document.getElementById('scenarioPrice').textContent = s.price;
+  document.getElementById('scenarioPrice').style.color = s.color;
+  document.getElementById('scenarioReturn').textContent = s.return;
+  document.getElementById('scenarioMethod').textContent = s.method;
+
+  // If all are active, show expected value
+  if (activeScenarios.size === 3) {
+    document.getElementById('scenarioPrice').textContent = '$629';
+    document.getElementById('scenarioPrice').style.color = '#E8A838';
+    document.getElementById('scenarioReturn').textContent = '+161% expected upside';
+    document.getElementById('scenarioMethod').textContent = 'Probability-weighted expected value: (25% × $424) + (50% × $622) + (25% × $848) = $629';
+  }
+}
+
+// ---- SMOOTH SCROLL WITH OFFSET ----
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+  a.addEventListener('click', function(e) {
+    e.preventDefault();
+    const target = document.querySelector(this.getAttribute('href'));
+    if (target) {
+      const offset = 72;
+      const top = target.getBoundingClientRect().top + window.pageYOffset - offset;
+      window.scrollTo({ top: top, behavior: 'smooth' });
+    }
+  });
+});
+</script>
+</body>
+</html>
