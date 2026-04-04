@@ -1,4 +1,8 @@
 FROM nginx:alpine
+
 COPY index-competition.html /usr/share/nginx/html/index.html
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/templates/default.conf.template
+
 EXPOSE 8080
+
+ENV PORT=8080
